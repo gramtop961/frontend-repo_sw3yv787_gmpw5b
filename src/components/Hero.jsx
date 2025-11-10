@@ -1,14 +1,70 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import Spline from '@splinetool/react-spline';
-import { motion } from 'framer-motion';
+import { motion, useMotionValue, useTransform, useSpring } from 'framer-motion';
 
 const Hero = () => {
+  // Mouse-parallax motion values
+  const mx = useMotionValue(0);
+  const my = useMotionValue(0);
+  const sx = useSpring(mx, { stiffness: 60, damping: 20, mass: 0.8 });
+  const sy = useSpring(my, { stiffness: 60, damping: 20, mass: 0.8 });
+
+  // Map to subtle translations for different depths
+  const depth1X = useTransform(sx, [ -1, 1 ], [ 18, -18 ]);
+  const depth1Y = useTransform(sy, [ -1, 1 ], [ 12, -12 ]);
+  const depth2X = useTransform(sx, [ -1, 1 ], [ 10, -10 ]);
+  const depth2Y = useTransform(sy, [ -1, 1 ], [ 8, -8 ]);
+
+  const handleMouseMove = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width; // 0..1
+    const y = (e.clientY - rect.top) / rect.height; // 0..1
+    // normalize to -1..1
+    mx.set(x * 2 - 1);
+    my.set(y * 2 - 1);
+  };
+
+  const noiseGradient = useMemo(() => ({
+    background:
+      'radial-gradient(60rem 40rem at 10% 90%, rgba(168,85,247,0.12), transparent 60%), ' +
+      'radial-gradient(50rem 30rem at 90% 10%, rgba(56,189,248,0.12), transparent 55%)',
+  }), []);
+
   return (
-    <section className="relative min-h-[92vh] w-full overflow-hidden">
+    <section onMouseMove={handleMouseMove} className="relative min-h-[92vh] w-full overflow-hidden">
+      {/* Live Spline scene */}
       <div className="absolute inset-0">
         <Spline scene="https://prod.spline.design/LU2mWMPbF3Qi1Qxh/scene.splinecode" style={{ width: '100%', height: '100%' }} />
       </div>
 
+      {/* Animated ambient overlays with parallax */}
+      <motion.div
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={noiseGradient}
+        animate={{ opacity: [0.6, 0.9, 0.6] }}
+        transition={{ duration: 10, repeat: Infinity, repeatType: 'mirror', ease: 'easeInOut' }}
+      />
+
+      <motion.div
+        aria-hidden
+        className="pointer-events-none absolute -inset-x-40 bottom-0 h-96 blur-3xl opacity-70"
+        style={{ x: depth2X, y: depth2Y }}
+      >
+        <motion.div
+          className="absolute left-1/4 w-80 h-80 bg-fuchsia-500/30 rounded-full mix-blend-screen"
+          animate={{ y: [0, -12, 0], x: [0, 8, 0] }}
+          transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
+        />
+        <motion.div
+          className="absolute right-1/3 w-80 h-80 bg-cyan-400/30 rounded-full mix-blend-screen"
+          style={{ x: depth1X, y: depth1Y }}
+          animate={{ y: [0, 14, 0], x: [0, -10, 0] }}
+          transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
+        />
+      </motion.div>
+
+      {/* Foreground content */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -53,13 +109,8 @@ const Hero = () => {
         </div>
       </motion.div>
 
+      {/* Top and bottom gradient wash to keep text readable */}
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/30" />
-
-      {/* Ambient glows */}
-      <div className="pointer-events-none absolute -inset-x-40 bottom-0 h-96 blur-3xl opacity-60">
-        <div className="absolute left-1/4 w-80 h-80 bg-fuchsia-500/30 rounded-full mix-blend-screen" />
-        <div className="absolute right-1/3 w-80 h-80 bg-cyan-400/30 rounded-full mix-blend-screen" />
-      </div>
     </section>
   );
 };
