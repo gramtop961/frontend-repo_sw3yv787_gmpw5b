@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const examplePrompts = [
   'A modern login page with a left image panel and right form, glassmorphism, brand color violet',
@@ -13,8 +14,6 @@ const PromptSection = () => {
 
   const handleGenerate = async () => {
     setLoading(true);
-    // For this landing page we mock the generation result locally.
-    // In a full app, this would call your backend using import.meta.env.VITE_BACKEND_URL
     await new Promise((r) => setTimeout(r, 900));
     setResult({
       preview: (
@@ -42,58 +41,85 @@ const PromptSection = () => {
   };
 
   return (
-    <section id="generate" className="relative py-20 bg-gradient-to-b from-black to-zinc-950">
+    <section id="generate" className="relative py-24 bg-gradient-to-b from-black to-zinc-950">
+      {/* Background accents */}
+      <div className="pointer-events-none absolute inset-0 [mask-image:radial-gradient(60%_60%_at_50%_0%,black,transparent)]">
+        <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-white/10 to-transparent" />
+      </div>
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid lg:grid-cols-2 gap-8">
-          <div>
+        <div className="grid lg:grid-cols-2 gap-10">
+          <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}>
             <h2 className="text-3xl md:text-4xl font-semibold tracking-tight">Describe the UI you need</h2>
             <p className="mt-3 text-white/75">Type a prompt and generate a working React + Tailwind component. Copy the code or export it into your project.</p>
 
-            <div className="mt-6 rounded-xl border border-white/10 bg-white/5 p-2">
+            <div className="mt-6 rounded-2xl border border-white/10 bg-white/5 p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
               <textarea
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
-                className="w-full h-36 bg-transparent resize-none outline-none p-3 rounded-lg text-white placeholder-white/50"
+                className="w-full h-40 bg-transparent resize-none outline-none p-3 rounded-xl text-white placeholder-white/50"
                 placeholder="e.g. A responsive navbar with logo, links, and a CTA button"
               />
               <div className="flex items-center justify-between p-2">
                 <div className="flex gap-2 overflow-x-auto">
                   {examplePrompts.map((ex, idx) => (
-                    <button key={idx} onClick={() => setPrompt(ex)} className="px-3 py-1.5 text-xs rounded-full bg-white/10 hover:bg-white/15 border border-white/15 whitespace-nowrap">
+                    <button key={idx} onClick={() => setPrompt(ex)} className="px-3 py-1.5 text-xs rounded-full bg-white/10 hover:bg-white/15 border border-white/15 whitespace-nowrap transition-colors">
                       {ex}
                     </button>
                   ))}
                 </div>
-                <button onClick={handleGenerate} disabled={loading} className="px-4 py-2 rounded-md bg-white text-black font-medium disabled:opacity-60">
+                <motion.button
+                  whileTap={{ scale: 0.98 }}
+                  whileHover={{ y: -1 }}
+                  onClick={handleGenerate}
+                  disabled={loading}
+                  className="px-4 py-2 rounded-md bg-white text-black font-medium disabled:opacity-60 shadow-[0_10px_30px_-10px_rgba(255,255,255,0.4)]"
+                >
                   {loading ? 'Generating…' : 'Generate UI'}
-                </button>
+                </motion.button>
               </div>
             </div>
-          </div>
+          </motion.div>
 
-          <div>
-            {result ? (
-              <div className="space-y-4">
-                {result.preview}
-                <div className="rounded-xl border border-white/10 bg-black/60">
-                  <div className="flex items-center justify-between px-4 py-2 border-b border-white/10 text-xs text-white/70">
-                    <span>Code</span>
-                    <button
-                      className="px-2 py-1 rounded bg-white/10 hover:bg-white/15"
-                      onClick={() => {
-                        navigator.clipboard.writeText(result.code);
-                      }}
-                    >Copy</button>
+          <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}>
+            <AnimatePresence mode="wait">
+              {result ? (
+                <motion.div
+                  key="result"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.4 }}
+                  className="space-y-4"
+                >
+                  {result.preview}
+                  <div className="rounded-xl overflow-hidden border border-white/10 bg-black/60">
+                    <div className="flex items-center justify-between px-4 py-2 border-b border-white/10 text-xs text-white/70">
+                      <span>Code</span>
+                      <button
+                        className="px-2 py-1 rounded bg-white/10 hover:bg-white/15 transition-colors"
+                        onClick={() => {
+                          navigator.clipboard.writeText(result.code);
+                        }}
+                      >Copy</button>
+                    </div>
+                    <pre className="p-4 overflow-x-auto text-sm"><code>{result.code}</code></pre>
                   </div>
-                  <pre className="p-4 overflow-x-auto text-sm"><code>{result.code}</code></pre>
-                </div>
-              </div>
-            ) : (
-              <div className="h-full min-h-[360px] rounded-xl border border-dashed border-white/15 grid place-items-center text-white/60">
-                Your generated preview will appear here.
-              </div>
-            )}
-          </div>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="placeholder"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.4 }}
+                  className="h-full min-h-[360px] rounded-xl border border-dashed border-white/15 grid place-items-center text-white/60"
+                >
+                  Your generated preview will appear here.
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
         </div>
       </div>
     </section>
