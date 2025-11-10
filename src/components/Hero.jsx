@@ -1,5 +1,4 @@
 import React, { useMemo } from 'react';
-import Spline from '@splinetool/react-spline';
 import { motion, useMotionValue, useTransform, useSpring } from 'framer-motion';
 
 const Hero = () => {
@@ -32,11 +31,6 @@ const Hero = () => {
 
   return (
     <section onMouseMove={handleMouseMove} className="relative min-h-[92vh] w-full overflow-hidden">
-      {/* Live Spline scene */}
-      <div className="absolute inset-0">
-        <Spline scene="https://prod.spline.design/LU2mWMPbF3Qi1Qxh/scene.splinecode" style={{ width: '100%', height: '100%' }} />
-      </div>
-
       {/* Animated ambient overlays with parallax */}
       <motion.div
         aria-hidden
@@ -110,7 +104,7 @@ const Hero = () => {
       </motion.div>
 
       {/* Top and bottom gradient wash to keep text readable */}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/30" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/20" />
     </section>
   );
 };
